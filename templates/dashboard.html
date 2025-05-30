@@ -59,60 +59,58 @@
 </footer>
 
 <script>
-// Dados simulados para os gráficos
-const dadosVendasSemana = {
-    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-    datasets: [{
-        label: 'Vendas por Dia',
-        data: [12, 19, 3, 5, 2, 3, 10],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1
-    }]
-};
+    // Dados do servidor via Jinja
+    const dadosVendasSemana = {
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+        datasets: [{
+            label: 'Vendas por Dia',
+            data: {{ vendas_por_dia_semana | tojson }},
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    };
 
-const dadosItensMaisVendidos = {
-    labels: ['Produto A', 'Produto B', 'Produto C', 'Outros'],
-    datasets: [{
-        label: 'Quantidade Vendida',
-        data: [150, 200, 100, 50],
-        backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)'
-        ],
-        borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)'
-        ],
-        borderWidth: 1
-    }]
-};
+    const dadosItensMaisVendidos = {
+        labels: {{ top_itens_vendidos | map(attribute=0) | list | tojson }},
+        datasets: [{
+            label: 'Quantidade Vendida',
+            data: {{ top_itens_vendidos | map(attribute=1) | list | tojson }},
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
 
-// Gráfico de Barras
-new Chart(document.getElementById('grafico-vendas-semana'), {
-    type: 'bar',
-    data: dadosVendasSemana,
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true
+    // Gráfico de Barras
+    new Chart(document.getElementById('grafico-vendas-semana'), {
+        type: 'bar',
+        data: dadosVendasSemana,
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
             }
         }
-    }
-});
+    });
 
-// Gráfico de Pizza
-new Chart(document.getElementById('grafico-itens-mais-vendidos'), {
-    type: 'pie',
-    data: dadosItensMaisVendidos,
-    options: {
-        responsive: true
-    }
-});
+    // Gráfico de Pizza
+    new Chart(document.getElementById('grafico-itens-mais-vendidos'), {
+        type: 'pie',
+        data: dadosItensMaisVendidos,
+        options: {
+            responsive: true
+        }
+    });
 </script>
 {% endblock %}

@@ -83,7 +83,46 @@ def register():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    db = get_db()
+
+    # Conta itens cadastrados
+    itens_count = db.execute('SELECT COUNT(*) FROM itens').fetchone()[0]
+
+    # Conta vendas realizadas
+    vendas_count = db.execute('SELECT COUNT(*) FROM vendas').fetchone()[0]
+
+    # Soma total do estoque (quantidade disponível)
+    estoque_total = db.execute('SELECT SUM(quantidade) FROM itens').fetchone()[0] or 0
+
+    # 1. Vendas por Dia da Semana
+    vendas_por_dia_semana = []
+    dias_semana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+    
+    for dia in dias_semana:
+        query = """
+            SELECT COUNT(*) 
+            FROM vendas 
+            WHERE strftime('%w', data_hora) = ?
+        """
+        count = db.execute(query, (dias_semana.index(dia),)).fetchone()[0]
+        vendas_por_dia_semana.append(count)
+
+    # 2. Itens Mais Vendidos
+    top_itens_vendidos = db.execute('''
+        SELECT i.nome, SUM(iv.quantidade) AS total_vendido
+        FROM itens_venda iv JOIN itens i ON iv.item_id = i.id
+        GROUP BY i.id ORDER BY total_vendido DESC LIMIT 4
+    ''').fetchall()
+
+    # Renderiza o template com os dados
+    return render_template(
+        'dashboard.html',
+        itens_count=itens_count,
+        vendas_count=vendas_count,
+        estoque_total=estoque_total,
+        vendas_por_dia_semana=vendas_por_dia_semana,
+        top_itens_vendidos=top_itens_vendidos
+    )
 
 # Cadastro de Item
 @app.route('/cadastro_item', methods=['GET', 'POST'])
