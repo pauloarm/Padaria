@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Página Inicial - Controle de Vendas{% endblock %}
 {% block content %}
-<style>
-    .bg-pink {
-        background-color: #FF69B4; /* Rosa vibrante */
-    }
-    .text-pink {
-        color: #FF69B4;
-    }
-</style>
 
 <!-- Seção de Bem-Vindo -->
 <section class="bg-pink py-5 text-white">
@@ -18,9 +10,6 @@
                 <h1 class="display-4 mb-3">Gestão de Vendas e Estoques</h1>
                 <p class="lead mb-4">Sistema completo para gerenciar seus produtos, realizar vendas e emitir relatórios.</p>
                 <a href="{{ url_for('login') }}" class="btn btn-light btn-lg px-4">Entrar no Sistema</a>
-            </div>
-            <div class="col-md-6">
-                <img src="{{ url_for('static', filename='banner.jpg') }}" alt="Banner do Sistema" class="img-fluid rounded shadow-sm">
             </div>
         </div>
     </div>
@@ -59,6 +48,6 @@
 </section>
 
 <footer class="mt-5 pt-4 border-top text-center text-muted">
-    &copy; 2025 - Controle de Vendas | Desenvolvido por Você
+    &copy; 2025 - Controle de Vendas | Desenvolvido por Paulo Machado
 </footer>
 {% endblock %}
