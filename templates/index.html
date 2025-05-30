@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Página Inicial - Controle de Vendas{% endblock %}
+{% block content %}
+<div class="text-center my-5">
+    <h1 class="display-4 fw-bold">Controle de Vendas</h1>
+    <p class="lead text-muted mb-4">Sistema completo para gestão de estoque, vendas e relatórios.</p>
+
+    <div class="d-flex justify-content-center gap-3 mb-5">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4">Entrar no Sistema</a>
+        <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Saiba Mais</a>
+    </div>
+
+    <img src="https://via.placeholder.com/800x300?text=Seu+Sistema+de+Vendas " alt="Banner do Sistema" class="img-fluid rounded shadow-sm mb-5" style="max-width: 100%;">
+</div>
+
+<!-- Funcionalidades -->
+<section id="features" class="my-5">
+    <div class="text-center mb-4">
+        <h2>Funcionalidades</h2>
+        <p class="text-muted">Tudo o que você precisa em um só lugar</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Cadastro de Itens</h5>
+                    <p class="card-text">Gerencie produtos com nome, categoria, preço de custo e venda.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Controle de Estoque</h5>
+                    <p class="card-text">Monitore quantidade disponível e pesquise por nome ou categoria.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Relatórios em PDF</h5>
+                    <p class="card-text">Gere relatórios detalhados de vendas e itens mais populares.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rodapé da página -->
+<section class="mt-5 pt-4 border-top text-center text-muted">
+    <p>&copy; 2025 - Controle de Vendas | Desenvolvido por Você</p>
+</section>
+{% endblock %}

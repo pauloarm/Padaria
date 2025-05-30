@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block content %}
+<h3>Gerar Relatórios</h3>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h5>Relatório de Vendas</h5>
+                <p>Gere um relatório com todas as vendas realizadas.</p>
+                <a href="{{ url_for('gerar_relatorio', tipo='vendas') }}" class="btn btn-primary">Gerar PDF</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h5>Itens Mais Vendidos</h5>
+                <p>Veja quais são os itens mais vendidos e seu lucro médio.</p>
+                <a href="{{ url_for('gerar_relatorio', tipo='mais_vendidos') }}" class="btn btn-primary">Gerar PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Nova Venda{% endblock %}
+{% block content %}
+<h3>Iniciar Venda</h3>
+<form method="POST">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select name="item_id" class="form-select" required>
+                {% for item in itens %}
+                    <option value="{{ item[0] }}">{{ item[1] }} (R$ {{ "%.2f"|format(item[5]) }}) - {{ item[2] }} unid.</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="qtd" class="form-control" placeholder="Quantidade" min="1" required>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Adicionar</button>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" name="limpar" value="1" class="btn btn-danger w-100">Limpar Carrinho</button>
+        </div>
+    </div>
+</form>
+
+{% if carrinho %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in carrinho %}
+                <tr>
+                    <td>{{ item.nome }}</td>
+                    <td>{{ item.quantidade }}</td>
+                    <td>R$ {{ "%.2f"|format((item.valor / item.quantidade)) }}</td>
+                    <td>R$ {{ "%.2f"|format(item.valor) }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="3" class="text-end"><strong>Total da Venda:</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total) }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form method="POST" action="{{ url_for('finalizar_venda') }}">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <select name="pagamento" class="form-select" required>
+                    <option value="">Forma de Pagamento</option>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="cartao">Cartão</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <input type="number" step="0.01" name="pago" class="form-control" placeholder="Valor pago (opcional)">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-success w-100">Finalizar Venda</button>
+            </div>
+        </div>
+    </form>
+{% else %}
+    <div class="alert alert-info">Seu carrinho está vazio.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Cadastro de Usuário{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header text-center"><h4>Cadastrar Usuário</h4></div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" name="nome" id="nome" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" name="senha" id="senha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Usuário</label>
+                        <select name="tipo" id="tipo" class="form-select" required>
+                            <option value="usuario">Usuário Comum</option>
+                            <option value="adm">Administrador</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

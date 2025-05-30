@@ -1,0 +1,33 @@
+/* style.css */
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    min-height: 150px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.alert {
+    margin-top: 1rem;
+}
+
+.table {
+    margin-top: 1rem;
+}
+
+.footer {
+    margin-top: 4rem;
+    padding: 1rem 0;
+    color: #6c757d;
+    text-align: center;
+    font-size: 0.9rem;
+}
