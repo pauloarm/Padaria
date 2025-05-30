@@ -1,33 +1,169 @@
 /* style.css */
-body {
-    background-color: #f8f9fa;
+
+/* Reset básico */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Para evitar que o preenchimento e a borda adicionem largura ao elemento */
 }
 
-.card {
+/* Redefine estilos de listas */
+ul, ol {
+    list-style: none; /* Remove os marcadores de lista */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container centralizado */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Navbar - Menu Superior */
+.navbar {
+    background-color: #007bff; /* Azul Bootstrap */
+    color: white;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.navbar .nav-link {
+    color: white !important;
+    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+}
+
+.navbar .nav-link:hover {
+    color: #e6e6e6 !important;
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Botão de logout */
+.btn-outline-light {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white !important;
+}
+
+/* Alertas */
+.alert {
     border-radius: 10px;
-    box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .card-body {
-    min-height: 150px;
+    padding: 1.5rem;
 }
 
-.navbar-brand {
-    font-weight: bold;
+/* Listas não ordenadas e ordenadas */
+ul, ol {
+    padding-left: 20px;
+    line-height: 1.6;
 }
 
-.alert {
-    margin-top: 1rem;
+ul li, ol li {
+    margin-bottom: 0.5rem;
 }
 
+/* Links gerais */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Tabelas */
 .table {
-    margin-top: 1rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
 }
 
-.footer {
+.table thead {
+    background-color: #f8f9fa;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+/* Inputs e formulários */
+.form-control {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #ccc;
+}
+
+.form-select {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-weight: 500;
+}
+
+/* Rodapé */
+footer {
     margin-top: 4rem;
-    padding: 1rem 0;
-    color: #6c757d;
+    padding: 2rem 0;
     text-align: center;
     font-size: 0.9rem;
+    color: #777;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
 }
