@@ -25,6 +25,7 @@
                      <a class="nav-link" href="{{ url_for('estoque') }}"><i class="fas fa-boxes-stacked"></i>Estoque</a>
                      <a class="nav-link" href="{{ url_for('venda') }}"><i class="fas fa-cart-shopping"></i>Nova venda</a>
                      <a class="nav-link" href="{{ url_for('relatorios') }}"><i class="fas fa-chart-bar"></i>Relatórios</a>
+                     <a class="nav-link" href="{{ url_for('historico_vendas') }}"><i class="fas fa-history"></i> Meu Histórico</a>
                  {% if current_user.tipo == 'adm' %}
                          <a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i>Registrar Usuário</a>
                  {% endif %}

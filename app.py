@@ -208,6 +208,80 @@ def venda():
         db = get_db()
         itens = db.execute('SELECT * FROM itens').fetchall()
         return render_template('venda.html', itens=itens, carrinho=carrinho, total=total)
+    
+@app.route('/historico_vendas')
+@login_required
+def historico_vendas():
+    db = get_db()
+    usuario_id = current_user.id
+    vendas_usuario = db.execute('''
+        SELECT v.id, u.nome, v.valor_total, v.data_hora 
+        FROM vendas v 
+        JOIN usuarios u ON v.usuario_id = u.id
+        WHERE v.usuario_id = ?
+        ORDER BY v.data_hora DESC
+    ''', (usuario_id,)).fetchall()
+
+    return render_template('historico_vendas.html', vendas=vendas_usuario)
+
+@app.route('/editar_item/<int:item_id>', methods=['GET', 'POST'])
+@login_required
+def editar_item(item_id):
+    db = get_db()
+    item = db.execute('SELECT * FROM itens WHERE id = ?', (item_id,)).fetchone()
+
+    if not item:
+        flash("Item não encontrado.")
+        return redirect(url_for('estoque'))
+
+    if request.method == 'POST':
+        nome = request.form['nome']
+        quantidade = int(request.form['quantidade'])
+        categoria = request.form['categoria']
+        custo = float(request.form['custo'])
+        venda = float(request.form['venda'])
+
+        db.execute('''
+            UPDATE itens 
+            SET nome = ?, quantidade = ?, categoria = ?, custo = ?, venda = ? 
+            WHERE id = ?
+        ''', (nome, quantidade, categoria, custo, venda, item_id))
+        db.commit()
+        flash("Item atualizado com sucesso!")
+        return redirect(url_for('estoque'))
+
+    return render_template('editar_item.html', item=item)
+
+@app.route('/excluir_item/<int:item_id>')
+@login_required
+def excluir_item(item_id):
+    db = get_db()
+    db.execute('DELETE FROM itens WHERE id = ?', (item_id,))
+    db.commit()
+    flash("Item excluído com sucesso!")
+    return redirect(url_for('estoque'))
+
+@app.route('/remover_item_carrinho', methods=['POST'])
+@login_required
+def remover_item_carrinho():
+    item_id = int(request.form['item_id'])
+    carrinho = session.get('carrinho', [])
+
+    # Remove apenas o primeiro item com esse ID (ou pode remover todos, se quiser)
+    for i, item in enumerate(carrinho):
+        if item['id'] == item_id:
+            carrinho.pop(i)
+            break
+
+    session['carrinho'] = carrinho
+    return redirect(url_for('venda'))
+
+@app.route('/cancelar_venda', methods=['POST'])
+@login_required
+def cancelar_venda():
+    session.pop('carrinho', None)
+    flash("Venda cancelada com sucesso.")
+    return redirect(url_for('venda'))
 
 @app.route('/finalizar_venda', methods=['POST'])
 @login_required
@@ -291,3 +365,4 @@ def gerar_relatorio(tipo):
 if __name__ == '__main__':
     init_db(app)
     app.run(debug=True)
+

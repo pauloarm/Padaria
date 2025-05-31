@@ -31,6 +31,7 @@
                 <th>Quantidade</th>
                 <th>Valor Unitário</th>
                 <th>Total</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -40,6 +41,12 @@
                     <td>{{ item.quantidade }}</td>
                     <td>R$ {{ "%.2f"|format((item.valor / item.quantidade)) }}</td>
                     <td>R$ {{ "%.2f"|format(item.valor) }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('remover_item_carrinho') }}">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
             <tr>
@@ -49,6 +56,12 @@
         </tbody>
     </table>
 
+    <!-- Botão para cancelar a venda completa -->
+    <form method="POST" action="{{ url_for('cancelar_venda') }}">
+        <button type="submit" class="btn btn-outline-danger mb-3">Cancelar Venda</button>
+    </form>
+
+    <!-- Formulário para finalizar venda -->
     <form method="POST" action="{{ url_for('finalizar_venda') }}">
         <div class="row">
             <div class="col-md-4 mb-3">

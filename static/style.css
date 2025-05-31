@@ -271,3 +271,6 @@ i.fas {
   color: var(--secondary);
   transform: scale(1.05);
 }
+.alerta{
+  text-align: center;
+}

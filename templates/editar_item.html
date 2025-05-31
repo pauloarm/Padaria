@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Editar Item - Controle de Vendas{% endblock %}
+{% block content %}
+<h2>Editar Item</h2>
+<form method="POST">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label" for="nome">Nome</label>
+            <input type="text" name="nome" id="nome" value="{{ item[1] }}" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="quantidade">Quantidade</label>
+            <input type="number" name="quantidade" id="quantidade" value="{{ item[2] }}" class="form-control" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label" for="categoria">Categoria</label>
+            <input type="text" name="categoria" id="categoria" value="{{ item[3] }}" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="custo">Custo</label>
+            <input type="number" step="0.01" name="custo" id="custo" value="{{ item[4] }}" class="form-control" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label" for="venda">Preço de Venda</label>
+            <input type="number" step="0.01" name="venda" id="venda" value="{{ item[5] }}" class="form-control" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    <a href="{{ url_for('estoque') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
