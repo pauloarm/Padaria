@@ -44,7 +44,6 @@
 <!-- Seção de Gráficos -->
 <h2 class="mt-5">Métricas Principais</h2>
 
-<!-- Gráfico de Barras: Vendas por Dia da Semana -->
 <div class="row">
     <div class="col-md-6">
         <canvas id="grafico-vendas-semana" height="200"></canvas>
@@ -54,48 +53,32 @@
     </div>
 </div>
 
-<footer class="mt-5 pt-4 border-top text-center text-muted">
-    &copy; 2025 - Controle de Vendas | Desenvolvido por Você
-</footer>
+<!-- Dados Dinâmicos -->
+<script id="dados-dashboard" type="application/json">
+{
+    "vendas_por_dia_semana": {{ vendas_por_dia_semana | tojson }},
+    "itens_nomes": {{ top_itens_vendidos | map(attribute=0) | list | tojson }},
+    "itens_quantidades": {{ top_itens_vendidos | map(attribute=1) | list | tojson }}
+}
+</script>
 
 <script>
-    // Dados do servidor via Jinja
-    const dadosVendasSemana = {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-        datasets: [{
-            label: 'Vendas por Dia',
-            data: {{ vendas_por_dia_semana | tojson }},
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        }]
-    };
+    // Lê os dados do JSON injetado pelo Jinja2
+    const data = JSON.parse(document.getElementById('dados-dashboard').textContent);
 
-    const dadosItensMaisVendidos = {
-        labels: {{ top_itens_vendidos | map(attribute=0) | list | tojson }},
-        datasets: [{
-            label: 'Quantidade Vendida',
-            data: {{ top_itens_vendidos | map(attribute=1) | list | tojson }},
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)'
-            ],
-            borderWidth: 1
-        }]
-    };
-
-    // Gráfico de Barras
+    // Gráfico de Barras: Vendas por Dia da Semana
     new Chart(document.getElementById('grafico-vendas-semana'), {
         type: 'bar',
-        data: dadosVendasSemana,
+        data: {
+            labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            datasets: [{
+                label: 'Vendas por Dia',
+                data: data.vendas_por_dia_semana,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true,
             scales: {
@@ -104,10 +87,29 @@
         }
     });
 
-    // Gráfico de Pizza
+    // Gráfico de Pizza: Itens Mais Vendidos
     new Chart(document.getElementById('grafico-itens-mais-vendidos'), {
         type: 'pie',
-        data: dadosItensMaisVendidos,
+        data: {
+            labels: data.itens_nomes,
+            datasets: [{
+                label: 'Quantidade Vendida',
+                data: data.itens_quantidades,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
         options: {
             responsive: true
         }

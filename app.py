@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from database import get_db, init_db, close_connection
 import pdfkit
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_123456'
@@ -85,7 +85,6 @@ def register():
 def dashboard():
     db = get_db()
 
-    # Conta itens cadastrados
     itens_count = db.execute('SELECT COUNT(*) FROM itens').fetchone()[0]
 
     # Conta vendas realizadas
@@ -94,27 +93,23 @@ def dashboard():
     # Soma total do estoque (quantidade disponível)
     estoque_total = db.execute('SELECT SUM(quantidade) FROM itens').fetchone()[0] or 0
 
-    # 1. Vendas por Dia da Semana
-    vendas_por_dia_semana = []
-    dias_semana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-    
-    for dia in dias_semana:
-        query = """
-            SELECT COUNT(*) 
-            FROM vendas 
-            WHERE strftime('%w', data_hora) = ?
-        """
-        count = db.execute(query, (dias_semana.index(dia),)).fetchone()[0]
-        vendas_por_dia_semana.append(count)
+    # Vendas por dia da semana (últimos 7 dias)
+    vendas_por_dia_semana = [0] * 7  # Inicializa com zeros
+    for i in range(7):
+        data = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        count = db.execute('''
+            SELECT COUNT(*) FROM vendas 
+            WHERE DATE(data_hora) = ?
+        ''', (data,)).fetchone()[0]
+        vendas_por_dia_semana[6 - i] = count  # Ajuste para ordem crescente (domingo a sábado)
 
-    # 2. Itens Mais Vendidos
+    # Itens mais vendidos
     top_itens_vendidos = db.execute('''
         SELECT i.nome, SUM(iv.quantidade) AS total_vendido
         FROM itens_venda iv JOIN itens i ON iv.item_id = i.id
         GROUP BY i.id ORDER BY total_vendido DESC LIMIT 4
     ''').fetchall()
 
-    # Renderiza o template com os dados
     return render_template(
         'dashboard.html',
         itens_count=itens_count,
@@ -171,7 +166,6 @@ def estoque():
 @login_required
 def venda():
     carrinho = session.get('carrinho', [])
-    total = sum(i['valor'] for i in carrinho)
 
     if request.method == 'POST':
         if 'limpar' in request.form:
@@ -183,18 +177,17 @@ def venda():
 
         db = get_db()
         item = db.execute('SELECT * FROM itens WHERE id = ?', (item_id,)).fetchone()
+
         if not item:
             flash("Item não encontrado.")
             return redirect(url_for('venda'))
 
-        if qtd > item[2]:  # Quantidade disponível
-            flash("Quantidade insuficiente no estoque.")
+        # Verifica se há estoque suficiente
+        if qtd > item[2]:  # item[2] é a quantidade disponível
+            flash(f"Quantidade insuficiente em estoque para {item[1]}.")
             return redirect(url_for('venda'))
 
-        db.execute('UPDATE itens SET quantidade = quantidade - ? WHERE id = ?', (qtd, item_id))
-        db.commit()
-
-        valor_total = item[5] * qtd
+        valor_total = item[5] * qtd  # item[5] é o preço de venda
         carrinho.append({
             'id': item_id,
             'nome': item[1],
@@ -207,7 +200,7 @@ def venda():
     elif request.method == 'GET':
         db = get_db()
         itens = db.execute('SELECT * FROM itens').fetchall()
-        return render_template('venda.html', itens=itens, carrinho=carrinho, total=total)
+        return render_template('venda.html', itens=itens, carrinho=carrinho)
     
 @app.route('/historico_vendas')
 @login_required
@@ -296,26 +289,38 @@ def finalizar_venda():
     pago = float(request.form.get('pago', 0))
 
     total = sum(i['valor'] for i in carrinho)
+    
+    if pagamento == 'dinheiro' and pago < total:
+        flash("Valor pago insuficiente.")
+        return redirect(url_for('venda'))
 
     if pagamento == 'dinheiro':
-        if pago < total:
-            flash("Valor pago insuficiente.")
-            return redirect(url_for('venda'))
         troco = round(pago - total, 2)
-    else:
-        pago = total
 
     db = get_db()
     data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    db.execute('INSERT INTO vendas (data_hora, usuario_id, valor_total, forma_pagamento) VALUES (?, ?, ?, ?)',
-               (data_hora, current_user.id, total, pagamento))
+
+    # Salva a venda
+    db.execute('''
+        INSERT INTO vendas (data_hora, usuario_id, valor_total, forma_pagamento) 
+        VALUES (?, ?, ?, ?)
+    ''', (data_hora, current_user.id, total, pagamento))
     venda_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
 
+    # Salva os itens da venda
     for item in carrinho:
-        db.execute('INSERT INTO itens_venda (venda_id, item_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)',
-                   (venda_id, item['id'], item['quantidade'], item['valor'] / item['quantidade']))
+        db.execute('''
+            INSERT INTO itens_venda (venda_id, item_id, quantidade, valor_unitario) 
+            VALUES (?, ?, ?, ?)
+        ''', (venda_id, item['id'], item['quantidade'], item['valor'] / item['quantidade']))
+
+        # Agora sim: reduzir o estoque
+        db.execute('''
+            UPDATE itens SET quantidade = quantidade - ? WHERE id = ?
+        ''', (item['quantidade'], item['id']))
+
     db.commit()
-    session['carrinho'] = []
+    session.pop('carrinho', None)
     flash("Venda finalizada com sucesso!")
     return redirect(url_for('venda'))
 

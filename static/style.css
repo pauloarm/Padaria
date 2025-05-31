@@ -274,3 +274,144 @@ i.fas {
 .alerta{
   text-align: center;
 }
+
+/* ============== */
+/* ESTILOS GRÁFICOS */
+/* ============== */
+
+/* Container dos gráficos */
+.chart-container {
+  position: relative;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Títulos dos gráficos */
+.chart-title {
+  font-family: 'Playfair Display', serif;
+  color: var(--secondary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Estilização base para todos os gráficos */
+canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 400px;
+  margin: 0 auto;
+}
+
+/* Gráfico de barras - personalização */
+.bar-chart {
+  background-color: rgba(212, 167, 106, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Gráfico de pizza - personalização */
+.pie-chart {
+  background-color: rgba(139, 69, 19, 0.03);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Legenda dos gráficos */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--dark);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip personalizado */
+.chartjs-tooltip {
+  background: var(--secondary) !important;
+  color: white !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 1rem !important;
+  font-family: 'Poppins', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
+
+.chartjs-tooltip-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+
+/* Eixos dos gráficos */
+.chartjs-render-monitor {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 1rem;
+  }
+  
+  .chart-title {
+    font-size: 1.25rem;
+  }
+  
+  canvas {
+    max-height: 300px;
+  }
+}
+
+/* Animações suaves para gráficos */
+@keyframes fadeInChart {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chart-container {
+  animation: fadeInChart 0.6s ease-out forwards;
+}
+
+/* Cores personalizadas para datasets */
+.chart-color-primary {
+  background-color: rgba(212, 167, 106, 0.2) !important;
+  border-color: var(--primary) !important;
+}
+
+.chart-color-secondary {
+  background-color: rgba(139, 69, 19, 0.2) !important;
+  border-color: var(--secondary) !important;
+}
+
+.chart-color-accent {
+  background-color: rgba(227, 24, 55, 0.2) !important;
+  border-color: var(--accent) !important;
+}
