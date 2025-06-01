@@ -166,6 +166,7 @@ def estoque():
 @login_required
 def venda():
     carrinho = session.get('carrinho', [])
+    total = sum(i['valor'] for i in carrinho)
 
     if request.method == 'POST':
         if 'limpar' in request.form:
@@ -200,7 +201,7 @@ def venda():
     elif request.method == 'GET':
         db = get_db()
         itens = db.execute('SELECT * FROM itens').fetchall()
-        return render_template('venda.html', itens=itens, carrinho=carrinho)
+        return render_template('venda.html', itens=itens, carrinho=carrinho, total=total)
     
 @app.route('/historico_vendas')
 @login_required
@@ -336,10 +337,30 @@ def gerar_relatorio(tipo):
     db = get_db()
     if tipo == 'vendas':
         vendas = db.execute('''
-            SELECT v.id, u.nome, v.valor_total, v.data_hora 
+            SELECT v.id, u.nome, v.data_hora, v.valor_total, v.forma_pagamento 
             FROM vendas v JOIN usuarios u ON v.usuario_id = u.id
+            ORDER BY v.data_hora DESC
         ''').fetchall()
-        html = render_template('relatorio_vendas.html', vendas=vendas)
+
+        vendas_com_itens = []
+        for venda in vendas:
+            itens = db.execute('''
+                SELECT i.nome, iv.quantidade, iv.valor_unitario 
+                FROM itens_venda iv JOIN itens i ON iv.item_id = i.id
+                WHERE iv.venda_id = ?
+            ''', (venda[0],)).fetchall()
+            
+            vendas_com_itens.append({
+                "id": venda[0],
+                "usuario": venda[1],
+                "data_hora": venda[2],
+                "valor_total": venda[3],
+                "forma_pagamento": venda[4],
+                "itens": [{"nome": i[0], "qtd": i[1], "valor": i[2]} for i in itens]
+            })
+
+        html = render_template('relatorio_todas_vendidas.html', vendas=vendas_com_itens)
+                
     elif tipo == 'mais_vendidos':
         mais_vendidos = db.execute('''
             SELECT i.nome, SUM(iv.quantidade) AS total_vendido, 
@@ -355,9 +376,6 @@ def gerar_relatorio(tipo):
     'no-stop-slow-scripts': None,  # Para evitar timeout em scripts pesados
 }
 
-    with open('debug.html', 'w', encoding='utf-8') as f:
-        f.write(html)
-
     path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
     pdf = pdfkit.from_string(html, False, options=options, configuration=config)
@@ -366,6 +384,53 @@ def gerar_relatorio(tipo):
         download_name=f'relatorio_{tipo}.pdf',
         as_attachment=True,
         mimetype='application/pdf')
+
+@app.route('/listar_vendas')
+@login_required
+def listar_vendas():
+    db = get_db()
+
+    pagina = int(request.args.get('pagina', 1))
+    limite = 10  # Mostrar 10 vendas por página
+    offset = (pagina - 1) * limite
+
+    #buscar todas as vendas com os dados do vendedor
+    vendas = db.execute('''
+        SELECT v.id, u.nome, v.data_hora, v.valor_total, v.forma_pagamento
+        FROM vendas v JOIN usuarios u ON v.usuario_id = u.id 
+        ORDER BY v.data_hora DESC
+        LIMIT ? OFFSET ?            
+    ''', (limite, offset)).fetchall()
+
+
+    #para cada venda, busca os itens vendidos nela
+    vendas_com_itens = []
+    for venda in vendas:
+        itens_venda = db.execute('''
+            SELECT i.nome, iv.quantidade, iv.valor_unitario
+            FROM itens_venda iv
+            JOIN itens i ON iv.item_id = i.id
+            WHERE iv.venda_id = ?
+        ''', (venda[0],)).fetchall()
+
+        #formatação da lista
+        itens_lista = [{"nome": item[0], "qtd": item[1], "valor": item[2]} for item in itens_venda]
+        total_venda = sum(item["qtd"]*item["valor"] for item in itens_lista)
+
+        vendas_com_itens.append({
+            "id": venda[0],
+            "usuario": venda[1],
+            "data_hora":venda[2],
+            "valor_total": venda[3],
+            "forma_pagamento": venda[4],
+            "itens": itens_lista,
+            "total_calculado": total_venda
+        })
+
+    has_next = (offset + limite) < total_venda
+
+    return render_template('listar_vendas.html', vendas=vendas_com_itens, pagina=pagina, has_next=has_next)
+    
 
 if __name__ == '__main__':
     init_db(app)

@@ -20,10 +20,11 @@
                     <img src= "{{ url_for('static', filename='logo.png') }}" />
                  </div>
                  <div class="nav-item">
+                     <a class="nav-link" href="{{ url_for('venda') }}"><i class="fas fa-cart-shopping"></i>Nova venda</a>
                      <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
                      <a class="nav-link" href="{{ url_for('cadastro_item') }}"><i class="fas fa-box-open"></i>Cadastrar Item</a>
                      <a class="nav-link" href="{{ url_for('estoque') }}"><i class="fas fa-boxes-stacked"></i>Estoque</a>
-                     <a class="nav-link" href="{{ url_for('venda') }}"><i class="fas fa-cart-shopping"></i>Nova venda</a>
+                     <a class="nav-link" href="{{ url_for('listar_vendas') }}"><i class="fas fa-receipt"></i> Ver Vendas</a>
                      <a class="nav-link" href="{{ url_for('relatorios') }}"><i class="fas fa-chart-bar"></i>Relatórios</a>
                      <a class="nav-link" href="{{ url_for('historico_vendas') }}"><i class="fas fa-history"></i> Meu Histórico</a>
                  {% if current_user.tipo == 'adm' %}

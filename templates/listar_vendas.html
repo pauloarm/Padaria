@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %} Listar Vendas {% endblock %}
+{% block content %}
+
+<h2>Lista de Vendas</h2>
+
+<a href="{{ url_for('gerar_relatorio', tipo='vendas') }}" class="btn btn-primary mb-3">Gerar Relatório PDF</a>
+
+<!-- Tabela de Vendas -->
+{% if vendas %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data/Hora</th>
+                <th>Vendedor</th>
+                <th>Forma de Pagamento</th>
+                <th>Total</th>
+                <th>Itens Vendidos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venda in vendas %}
+                <tr>
+                    <td>{{ venda.id }}</td>
+                    <td>{{ venda.data_hora }}</td>
+                    <td>{{ venda.usuario }}</td>
+                    <td>{{ venda.forma_pagamento|title }}</td>
+                    <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                    <td>
+                        {% if venda.itens %}
+                            <ul class="list-group list-group-flush">
+                                {% for item in venda.itens %}
+                                    <li class="list-group-item">
+                                        {{ item.nome }} - {{ item.qtd }} x R$ {{ "%.2f"|format(item.valor) }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <em>Nenhum item vendido</em>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- Paginação -->
+    <nav class="paginacao">
+        <div class="pagination justify-content-center">
+            {% if pagina > 1 %}
+                    <a class="page-link" href="{{ url_for('listar_vendas', pagina=pagina-1) }}">Anterior</a>
+            {% else %}
+                    <span class="page-link">Anterior</span>
+            {% endif %}>
+                <span class="page-link"> {{ pagina }}</span>
+            {% if has_next %}
+                    <a class="page-link" href="{{ url_for('listar_vendas', pagina=pagina+1) }}">Próxima</a>
+            {% else %}
+                    <span class="page-link">Próxima</span>
+            {% endif %}
+            </div>
+    </nav>
+
+
+{% else %}
+    <div class="alert alert-info">Nenhuma venda registrada ainda.</div>
+{% endif %}
+
+{% endblock %}

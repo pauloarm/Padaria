@@ -58,6 +58,10 @@ body {
   transform: scale(1.05);
 }
 
+.paginacao{
+  justify-content: space-around;
+}
+
 .nav-link {
   color: white;
   text-decoration: none;
