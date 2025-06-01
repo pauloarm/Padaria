@@ -286,17 +286,20 @@ def finalizar_venda():
         return redirect(url_for('venda'))
 
     pagamento = request.form['pagamento']
-    troco = 0.0
-    pago = float(request.form.get('pago', 0))
+
+    pago = 0.0
+    if pagamento == 'dinheiro':
+        try:
+            pago = float(request.form.get('pago', 0))
+        except ValueError:
+            flash("Por favor, insira um valor válido.")
+            return redirect(url_for('venda'))
 
     total = sum(i['valor'] for i in carrinho)
-    
-    if pagamento == 'dinheiro' and pago < total:
-        flash("Valor pago insuficiente.")
-        return redirect(url_for('venda'))
 
-    if pagamento == 'dinheiro':
-        troco = round(pago - total, 2)
+    if pagamento == 'dinheiro' and pago < total:
+        flash("Valor pago é menor que o total da venda.")
+        return redirect(url_for('venda'))
 
     db = get_db()
     data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -322,7 +325,11 @@ def finalizar_venda():
 
     db.commit()
     session.pop('carrinho', None)
-    flash("Venda finalizada com sucesso!")
+    if pagamento == 'dinheiro':
+        troco = round(pago - total, 2)
+        flash(f"Venda finalizada com sucesso! Troco: R$ {troco:.2f}")
+    else:
+        flash("Venda finalizada com sucesso!")
     return redirect(url_for('venda'))
 
 # Relatórios
