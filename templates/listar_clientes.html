@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Clientes com Dívidas{% endblock %}
+{% block content %}
+<h2>Clientes com Dívidas</h2>
+
+<!-- Abertas -->
+<h4>Dívidas em Aberto</h4>
+{% if clientes_abertos %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Total Devido</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes_abertos %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>R$ {{ "%.2f"|format(cliente.total_devido) }}</td>
+                <td>
+                    <a href="{{ url_for('ver_conta_cliente', cliente_id=cliente.id) }}" class="btn btn-sm btn-primary">Ver Conta</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">Nenhum cliente com dívida em aberto.</div>
+{% endif %}
+
+<!-- Quitadas -->
+<h4>Dívidas Quitadas</h4>
+{% if clientes_quitados %}
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Valor Pago</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes_quitados %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>R$ {{ "%.2f"|format(cliente.valor_pago) }}</td>
+                <td>
+                    <a href="{{ url_for('ver_conta_cliente', cliente_id=cliente.id) }}" class="btn btn-sm btn-secondary">Ver Histórico</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhuma dívida quitada até o momento.</p>
+{% endif %}
+
+<a href="{{ url_for('cadastrar_cliente') }}" class="btn btn-success mt-3">+ Cadastrar Cliente</a>
+{% endblock %}

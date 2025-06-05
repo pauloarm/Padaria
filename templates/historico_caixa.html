@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Histórico de Caixa{% endblock %}
+{% block content %}
+<h2>Histórico de Fechamento de Caixa</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Vendas (Dinheiro)</th>
+            <th>Vendas (Cartão)</th>
+            <th>Sangrias</th>
+            <th>Saldo Final</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in historico %}
+            <tr>
+                <td>{{ item.data|formatar_data}}</td>
+                <td>R$ {{ "%.2f"|format(item.total_dinheiro) }}</td>
+                <td>R$ {{ "%.2f"|format(item.total_cartao) }}</td>
+                <td>R$ {{ "%.2f"|format(item.total_sangria) }}</td>
+                <td>R$ {{ "%.2f"|format(item.saldo_final) }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('gerar_relatorio', tipo='historico_caixa') }}" class="btn btn-primary mt-3">Gerar Relatório PDF</a>
+{% endblock %}

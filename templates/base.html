@@ -3,44 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Controle de Vendas{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap @5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css " rel="stylesheet"> <!-- Ícones Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
 <!-- Navbar -->
- <header>
-     <nav class="navbar">
-         <div class="navbar-nav">
-             {% if current_user.is_authenticated %}
-                 <div class="navbar-logo"> 
-                    <img src= "{{ url_for('static', filename='logo.png') }}" />
-                 </div>
-                 <div class="nav-item">
-                     <a class="nav-link" href="{{ url_for('venda') }}"><i class="fas fa-cart-shopping"></i>Nova venda</a>
-                     <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
-                     <a class="nav-link" href="{{ url_for('cadastro_item') }}"><i class="fas fa-box-open"></i>Cadastrar Item</a>
-                     <a class="nav-link" href="{{ url_for('estoque') }}"><i class="fas fa-boxes-stacked"></i>Estoque</a>
-                     <a class="nav-link" href="{{ url_for('listar_vendas') }}"><i class="fas fa-receipt"></i> Ver Vendas</a>
-                     <a class="nav-link" href="{{ url_for('relatorios') }}"><i class="fas fa-chart-bar"></i>Relatórios</a>
-                     <a class="nav-link" href="{{ url_for('historico_vendas') }}"><i class="fas fa-history"></i> Meu Histórico</a>
-                 {% if current_user.tipo == 'adm' %}
-                         <a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i>Registrar Usuário</a>
-                 {% endif %}
-             {% else %}
-                     <a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i>Login</a>
-                 </div>
-             {% endif %}
-         </div>
-             <div class="d-flex align-items-center">
-                 {% if current_user.is_authenticated %}
-                     <span class="text-white me-3">Olá, {{ current_user.nome }}</span>
-                     <a href="{{ url_for('logout') }}" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Sair</a>
-                 {% endif %}
-             </div>
+<header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="navbar-logo"> 
+                <a href="{{ url_for('index') }}">
+                    <img src="{{ url_for('static', filename='logo.png') }}" />
+                </a>  
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
+                        <!-- Dropdown Caixa -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="caixaDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cash-register"></i> Caixa
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('caixa') }}"><i class="fas fa-cash-register"></i> Controle de Caixa</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('historico_caixa') }}"><i class="fas fa-history"></i> Histórico</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('registrar_sangria') }}"><i class="fas fa-hand-holding-usd"></i> Sangria</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Dropdown Vendas -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="vendasDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cart-shopping"></i> Vendas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('venda') }}"><i class="fas fa-cart-plus"></i> Nova Venda</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('listar_vendas') }}"><i class="fas fa-receipt"></i> Ver Vendas</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Dropdown Produtos -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="produtosDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-boxes"></i> Produtos
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('cadastro_item') }}"><i class="fas fa-box-open"></i> Cadastrar Item</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('estoque') }}"><i class="fas fa-boxes-stacked"></i> Estoque</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Itens individuais -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('listar_clientes') }}"><i class="fas fa-user-plus"></i> Contas Fiadas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('relatorios') }}"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                        </li>
+                        
+                        {% if current_user.tipo == 'adm' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Registrar Usuário</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <span class="text-white me-3">Olá, {{ current_user.nome }}</span>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </nav>
 </header>
 

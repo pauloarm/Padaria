@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo de Pagamento</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .header { text-align: center; }
+        .info { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Recibo de Pagamento</h2>
+        <p><strong>Data:</strong> {{ data_pagamento }}</p>
+    </div>
+
+    <div class="info">
+        <p><strong>Cliente:</strong> {{ cliente_nome }}</p>
+        <p><strong>Valor Pago:</strong> R$ {{ "%.2f"|format(valor_pago) }}</p>
+        <p><strong>Vendedor:</strong> {{ vendedor }}</p>
+    </div>
+
+    <p>Assinatura: ___________________________</p>
+</body>
+</html>

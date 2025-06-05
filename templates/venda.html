@@ -2,6 +2,7 @@
 {% block title %}Nova Venda{% endblock %}
 {% block content %}
 <h3>Iniciar Venda</h3>
+
 <form method="POST">
     <div class="row mb-3">
         <div class="col-md-4">
@@ -23,6 +24,7 @@
     </div>
 </form>
 
+<!-- Carrinho -->
 {% if carrinho %}
     <table class="table table-bordered table-striped">
         <thead>
@@ -56,41 +58,75 @@
         </tbody>
     </table>
 
-    <!-- Botão para cancelar a venda completa -->
+    <!-- Botão de Cancelar venda -->
     <form method="POST" action="{{ url_for('cancelar_venda') }}">
         <button type="submit" class="btn btn-outline-danger mb-3">Cancelar Venda</button>
     </form>
 
-    <!-- Formulário para finalizar venda -->
-    <form method="POST" action="{{ url_for('finalizar_venda') }}">
+    <!-- Formulário de Finalização -->
+    <form method="POST" action="{{ url_for('finalizar_venda') }}" id="formFinalizar">
         <div class="row">
+            <!-- Forma de Pagamento -->
             <div class="col-md-4 mb-3">
-                <select name="pagamento" class="form-select" required>
+                <select name="pagamento" id="pagamentoSelect" class="form-select" required>
                     <option value="">Forma de Pagamento</option>
                     <option value="dinheiro">Dinheiro</option>
                     <option value="cartao">Cartão</option>
+                    <option value="fiado">Fiado</option>
                 </select>
             </div>
-            <div class="col-md-4 mb-3">
-                <input type="number" step="0.01" name="pago" id="pago" class="form-control" placeholder="Valor pago (opcional)">
+
+            <!-- Campo Cliente (apenas se for fiado) -->
+            <div class="col-md-4 mb-3" id="clienteDiv" style="display: none;">
+                <select name="cliente_id" class="form-select">
+                    <option value="">Selecione o cliente</option>
+                    {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}"> {{cliente.nome}} </option>
+                    {% endfor %}
+                </select>
             </div>
+
+            <!-- Valor Pago (apenas se for dinheiro) -->
+            <div class="col-md-4 mb-3" id="valorPagoDiv" style="display: none;">
+                <input type="number" step="0.01" name="pago" class="form-control" placeholder="Valor pago (opcional)">
+            </div>
+
+            <!-- Botão Finalizar -->
             <div class="col-md-4">
                 <button type="submit" class="btn btn-success w-100">Finalizar Venda</button>
             </div>
         </div>
     </form>
-    <script>
-    const pagamento = document.getElementById('pagamento');
-    const valorPagoDiv = document.getElementById('valor_pago_div');
 
-    pagamento.addEventListener('change', () => {
-        if (pagamento.value === 'dinheiro') {
-            valorPagoDiv.style.display = 'block';
-        } else {
-            valorPagoDiv.style.display = 'none';
+    <!-- Script para mostrar campos condicionais -->
+    <script>
+        const selectPagamento = document.getElementById("pagamentoSelect");
+        const divCliente = document.getElementById("clienteDiv");
+        const divValorPago = document.getElementById("valorPagoDiv");
+
+        function atualizarCampos() {
+            const forma = selectPagamento.value;
+
+            // Esconde todos primeiro
+            divCliente.style.display = 'none';
+            divValorPago.style.display = 'none';
+
+            // Mostra os certos
+            if (forma === 'dinheiro') {
+                divValorPago.style.display = 'block';
+            } else if (forma === 'fiado') {
+                divCliente.style.display = 'block';
+            }
+            // Cartão não precisa de ação adicional
         }
-    });
+
+        // Roda ao carregar
+        window.addEventListener("DOMContentLoaded", atualizarCampos);
+
+        // Roda ao mudar a forma de pagamento
+        selectPagamento.addEventListener("change", atualizarCampos);
     </script>
+
 {% else %}
     <div class="alert alert-info">Seu carrinho está vazio.</div>
 {% endif %}

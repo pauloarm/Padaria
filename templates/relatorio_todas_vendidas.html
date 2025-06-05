@@ -15,7 +15,7 @@
     <h2>Relatório de Vendas</h2>
 
     {% for venda in vendas %}
-        <h4>ID: {{ venda.id }} | Data: {{ venda.data_hora }} | Usuário: {{ venda.usuario }}</h4>
+        <h4>ID: {{ venda.id }} | Data: {{ venda.data_hora | formatar_data}} | Usuário: {{ venda.usuario }}</h4>
         <table>
             <thead>
                 <tr>

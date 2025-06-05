@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Conta do Cliente - {{ cliente.nome }}{% endblock %}
+{% block content %}
+<h3>Conta de {{ cliente.nome }}</h3>
+
+<p><strong>Telefone:</strong> {{ cliente.telefone or '-' }}</p>
+<p><strong>Endereço:</strong> {{ cliente.endereco or '-' }}</p>
+
+<!-- Total devido -->
+<div class="alert alert-warning">
+    <h5>Total em Aberto</h5>
+    <p><strong>R$ {{ "%.2f"|format(total_devido) }}</strong></p>
+</div>
+
+
+<div class="mb-3">
+    <form action="{{ url_for('pagar_dividas_cliente', cliente_id=cliente.id, tipo='todas') }}" method="POST" class="d-inline me-2">
+        <button type="submit" class="btn btn-sm btn-success">Pagar Tudo</button>
+    </form>
+
+    <form action="{{ url_for('pagar_dividas_cliente', cliente_id=cliente.id, tipo='selecionadas') }}" method="POST" class="d-inline">
+        <input type="hidden" name="divida_ids" id="dividaIdsInput" value="">
+        <button type="submit" class="btn btn-sm btn-primary" onclick="confirmarPagamento()">Pagar Selecionadas</button>      
+    </form>
+       {% if total_pago > 0 %}
+            <div class="mt-4">
+                <a href="{{ url_for('gerar_recibo_dividas_quitadas', cliente_id=cliente.id) }}" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Gerar Recibo de Todas as Dívidas Quitadas
+                </a>
+            </div>
+        {% endif %}
+</div>
+
+<!-- Tabela de Dívidas -->
+<h4>Dívidas</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Selecionar</th>
+            <th>Data da Compra</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Data do Pagamento</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for divida in dividas %}
+            <tr>
+                <td>
+                    {% if divida[4] == 0 %}
+                    <input type="checkbox" name="divida_ids" value="{{ divida[0] }}">
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ divida[1] }}</td>
+                <td>R$ {{ "%.2f"|format(divida[2]) }}</td>
+                <td>{{ 'Paga' if divida[4] == 1 else 'Em Aberto' }}</td>
+                <td>{{ divida[5] or '-' }}</td>
+                <td>
+                    {% if divida[4] == 1 %}
+                        <a href="{{ url_for('gerar_recibo_pagamento', id=divida[0]) }}" class="btn btn-sm btn-danger">Gerar Recibo</a>                       
+                    {% else %}
+                        <form action="{{ url_for('pagar_divida', id=divida[0]) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Quitar</button>
+                        </form>
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Se não tiver nenhuma dívida -->
+{% if dividas|length == 0 %}
+    <div class="alert alert-info">Nenhuma dívida registrada para este cliente.</div>
+{% endif %}
+
+<a href="{{ url_for('listar_clientes') }}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}
+
+<script>
+    function confirmarPagamento() {
+        const checkboxes = document.querySelectorAll('input[name="divida_ids"]:checked');
+        const ids = Array.from(checkboxes).map(cb => cb.value);
+        if (ids.length === 0) {
+            alert("Selecione pelo menos uma dívida.");
+            return false;
+        }
+        document.getElementById('dividaIdsInput').value = ids.join(',');
+    }
+</script>

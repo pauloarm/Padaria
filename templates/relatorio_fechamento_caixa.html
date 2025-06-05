@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fechamento de Caixa - {{ data_hoje }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h2 { text-align: center; }
+        .info-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        .total { background-color: #f2f2f2; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Fechamento de Caixa - {{ data_hoje }}</h2>
+
+    <div class="info-box">
+        <p><strong>Total de Vendas:</strong> R$ {{ "%.2f"|format(total_caixa) }}</p>
+        <p><strong>Pagamentos em Dinheiro:</strong> R$ {{ "%.2f"|format(total_dinheiro) }}</p>
+        <p><strong>Pagamentos em Cartão:</strong> R$ {{ "%.2f"|format(total_cartao) }}</p>
+        <p><strong>Pagamentos Fiado:</strong> R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</p>
+        <p><strong>Saldo Final (Dinheiro):</strong> R$ {{ "%.2f"|format(saldo_final_dinheiro) }}</p>
+    </div>
+
+    <h4>Detalhe das Vendas</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data/Hora</th>
+                <th>Usuário</th>
+                <th>Forma</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venda in vendas %}
+                <tr>
+                    <td>{{ venda[0] }}</td>
+                    <td>{{ venda[1] | formatar_data }}</td>
+                    <td>{{ venda[3] }}</td>
+                    <td>{{ venda[2]|title }}</td>
+                    <td>R$ {{ "%.2f"|format(venda[4]) }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="total">
+                <td colspan="4">Total Geral</td>
+                <td>R$ {{ "%.2f"|format(total_vendas) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Seção de Recebimento de Fiado -->
+        <h4>Recebimentos de Fiado</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Cliente</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pagamento in pagamentos_fiados %}
+                    <tr>
+                        <td>{{ pagamento.data_pagamento | formatar_data }}</td>
+                        <td>{{ pagamento.nome }}</td>
+                        <td>R$ {{ "%.2f"|format(pagamento.valor_pago) }}</td>
+                    </tr>
+                {% endfor %}
+                <tr class="total">
+                    <td colspan="2"><strong>Total de Fiado Recebido</strong></td>
+                    <td><strong>R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    
+</body>
+</html>

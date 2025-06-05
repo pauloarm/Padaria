@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Controle de Caixa - {{ data_hoje }}{% endblock %}
+{% block content %}
+<h2>Controle de Caixa - {{ data_hoje }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Total de Vendas</h5>
+                <p class="display-6 text-success">R$ {{ "%.2f"|format(total_caixa) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Vendas em Dinheiro</h5>
+                <p class="display-6 text-primary">R$ {{ "%.2f"|format(total_dinheiro) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Vendas no Cartão</h5>
+                <p class="display-6 text-secondary">R$ {{ "%.2f"|format(total_cartao) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Fiado Pago</h5>
+                <p class="display-6 text-warning">R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Detalhes das Vendas do Dia</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Data/Hora</th>
+            <th>Usuário</th>
+            <th>Forma de Pagamento</th>
+            <th>Valor Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for venda in vendas %}
+            <tr>
+                <td>{{ venda[0] }}</td>
+                <td>{{ venda[1] | formatar_data}}</td>
+                <td>{{ venda[3] }}</td>
+                <td>{{ venda[2]|title }}</td>
+                <td>R$ {{ "%.2f"|format(venda[4]) }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhuma venda registrada hoje.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>Contas a Receber (Fiado)</h4>
+{% if contas_fiadas %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Valor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in contas_fiadas %}
+            <tr>
+                <td>{{ f.data_venda | formatar_data }}</td>
+                <td>{{ f.nome_cliente }}</td>
+                <td>R$ {{ "%.2f"|format(f.valor) }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-secondary">Nenhuma conta a receber hoje.</div>
+{% endif %}
+
+<h4>Entradas de Fiado</h4>
+{% if pagamentos_fiados %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pagamento in pagamentos_fiados %}
+                <tr>
+                    <td>{{ pagamento.data_pagamento | formatar_data }}</td>
+                    <td>{{ pagamento.nome }}</td>
+                    <td>R$ {{ "%.2f"|format(pagamento.valor_pago) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-info">Nenhuma quitação de fiado hoje.</div>
+{% endif %}
+
+<h4>Sangrias do Dia</h4>
+{% if sangrias %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Data/Hora</th>
+                <th>Usuário</th>
+                <th>Valor</th>
+                <th>Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sangrias %}
+                <tr>
+                    <td>{{ s[1] }}</td>
+                    <td>{{ s[4] }}</td>
+                    <td>R$ {{ "%.2f"|format(s[2]) }}</td>
+                    <td>{{ s[3] or '-' }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="table-secondary">
+                <td colspan="2"><strong>Total de Sangrias</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total_sangrias) }}</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhuma sangria registrada hoje.</p>
+{% endif %}
+
+
+
+<h5 class="mt-4">Saldo Final em Dinheiro:</h5>
+<p class="display-6 text-success">R$ {{ "%.2f"|format(saldo_final) }}</p>
+
+<a href="{{ url_for('gerar_relatorio', tipo='fechamento_caixa') }}" class="btn btn-danger mt-3">Gerar Relatório de Fechamento</a>
+{% endblock %}

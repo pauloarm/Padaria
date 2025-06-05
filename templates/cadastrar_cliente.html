@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Cadastrar Cliente{% endblock %}
+{% block content %}
+<h3>Cadastrar Novo Cliente</h3>
+<form method="POST">
+    <div class="mb-3">
+        <label for="nome" class="form-label">Nome</label>
+        <input type="text" name="nome" id="nome" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="telefone" class="form-label">Telefone</label>
+        <input type="text" name="telefone" id="telefone" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="endereco" class="form-label">Endereço</label>
+        <input type="text" name="endereco" id="endereco" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Salvar Cliente</button>
+</form>
+{% endblock %}
