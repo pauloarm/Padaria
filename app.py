@@ -386,6 +386,16 @@ def caixa():
         WHERE DATE(hp.data_pagamento) = ?
     ''', (hoje,)).fetchall()
 
+    # Busca o troco inicial do dia
+    caixa_inicio = db.execute('''
+        SELECT troco_inicial, u.nome 
+        FROM caixa_diario cd
+        JOIN usuarios u ON cd.usuario_id = u.id
+        WHERE data = ?
+        ORDER BY cd.id DESC LIMIT 1
+    ''', (hoje,)).fetchone()
+
+    troco_inicial = caixa_inicio[0] if caixa_inicio else 0.0
     total_vendas = sum(v[4] for v in vendas_do_dia)
     total_dinheiro = sum(v[4] for v in vendas_do_dia if v[2]=='dinheiro')
     total_cartao = sum(v[4] for v in vendas_do_dia if v[2] == 'cartao') 
@@ -410,11 +420,12 @@ def caixa():
 
     total_sangrias = sum(float(s[2]) for s in sangrias_do_dia)
 
-    saldo_final = round(total_dinheiro - total_sangrias, 2)
+    saldo_final = round(troco_inicial + total_dinheiro - total_sangrias, 2)
 
     return render_template(
         'caixa.html',
         vendas=vendas_do_dia,
+        caixa_inicio=caixa_inicio,
         pagamentos_fiados = pagamentos_fiados,
         sangrias=sangrias_do_dia,
         total_vendas=total_vendas,
@@ -427,6 +438,39 @@ def caixa():
         contas_fiadas=contas_fiadas,
         data_hoje=datetime.now().strftime('%d/%m/%Y')
     )
+
+@app.route('/registrar_troco', methods=['GET', 'POST'])
+@login_required
+def registrar_troco():
+    db = get_db()
+    hoje = datetime.now().strftime('%Y-%m-%d')
+
+    # Verifica se já existe troco registrado hoje
+    ja_registrado = db.execute('''
+        SELECT * FROM caixa_diario 
+        WHERE data = ? AND usuario_id = ?
+    ''', (hoje, current_user.id)).fetchone()
+
+    if ja_registrado:
+        flash("Você já registrou o troco inicial hoje.")
+        return redirect(url_for('caixa'))
+
+    if request.method == 'POST':
+        try:
+            troco = float(request.form['troco'])
+        except ValueError:
+            flash("Valor inválido.")
+            return redirect(url_for('registrar_troco'))
+
+        db.execute('''
+            INSERT INTO caixa_diario (data, troco_inicial, usuario_id)
+            VALUES (?, ?, ?)
+        ''', (hoje, troco, current_user.id))
+        db.commit()
+        flash(f"Troco inicial de R$ {troco:.2f} registrado com sucesso!")
+        return redirect(url_for('caixa'))
+
+    return render_template('registrar_troco.html')
 
 @app.route('/registrar_sangria', methods=['GET', 'POST'])
 @login_required
@@ -837,7 +881,18 @@ def gerar_relatorio(tipo):
         ''').fetchall()
         html = render_template('relatorio_mais_vendidos.html', itens=mais_vendidos)
 
+    
     elif tipo == 'fechamento_caixa':
+
+        caixa_inicio = db.execute('''
+        SELECT cd.troco_inicial, u.nome 
+        FROM caixa_diario cd
+        JOIN usuarios u ON cd.usuario_id = u.id
+        WHERE DATE(cd.data) = ?
+    ''', (hoje,)).fetchone()
+        
+        troco_inicial = caixa_inicio[0] if caixa_inicio else 0.0
+        
         vendas_do_dia = db.execute('''
         SELECT v.id, v.data_hora, v.forma_pagamento, u.nome, v.valor_total
         FROM vendas v
@@ -854,12 +909,20 @@ def gerar_relatorio(tipo):
             WHERE DATE(hp.data_pagamento) = ?
         ''', (hoje,)).fetchall()
 
+        # Sangrias do dia
+        sangrias_do_dia = db.execute('''
+            SELECT valor, descricao, data_hora FROM sangrias
+            WHERE DATE(data_hora) = ?
+        ''', (hoje,)).fetchall()
+
+        total_sangrias = sum(s[0] for s in sangrias_do_dia)
+
         total_vendas = sum(v[4] for v in vendas_do_dia)
         total_dinheiro = sum(v[4] for v in vendas_do_dia if v[2]=='dinheiro')
         total_cartao = sum(v[4] for v in vendas_do_dia if v[2] == 'cartao') 
         total_pagamentos_fiados = sum(p[0] for p in pagamentos_fiados)
         total_caixa = total_vendas + total_pagamentos_fiados
-        saldo_final_dinheiro = total_dinheiro  # Aqui você pode adicionar ou subtrair sangrias
+        saldo_final_dinheiro = round(troco_inicial + total_dinheiro + total_pagamentos_fiados - total_sangrias, 2)
 
         html = render_template(
             'relatorio_fechamento_caixa.html',
@@ -867,6 +930,9 @@ def gerar_relatorio(tipo):
             pagamentos_fiados = pagamentos_fiados,
             total_vendas=total_vendas,
             total_dinheiro=total_dinheiro,
+            sangrias = sangrias_do_dia,
+            total_sangrias = total_sangrias,
+            troco_inicial=troco_inicial,
             total_cartao=total_cartao,
             total_caixa=total_caixa,
             total_pagamentos_fiados=total_pagamentos_fiados,

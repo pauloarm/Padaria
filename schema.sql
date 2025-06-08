@@ -77,3 +77,12 @@ CREATE TABLE IF NOT EXISTS historico_pagamentos (
     FOREIGN KEY(cliente_id) REFERENCES clientes(id),
     FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
 );
+
+CREATE TABLE IF NOT EXISTS caixa_diario (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    data TEXT NOT NULL,
+    troco_inicial REAL NOT NULL,
+    usuario_id INTEGER NOT NULL,
+    FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
+    UNIQUE(data, usuario_id)
+);

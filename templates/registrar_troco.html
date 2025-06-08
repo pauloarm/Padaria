@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Registrar Troco Inicial{% endblock %}
+{% block content %}
+<h3>Registrar Troco Inicial do Caixa</h3>
+<p><strong>Data:</strong> {{ data_hoje }}</p>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="troco" class="form-label">Quantia em Dinheiro (R$)</label>
+        <input type="number" step="0.01" name="troco" id="troco" class="form-control" placeholder="Ex: 50.00" required>
+    </div>
+    <button type="submit" class="btn btn-success">Registrar Troco</button>
+</form>
+{% endblock %}

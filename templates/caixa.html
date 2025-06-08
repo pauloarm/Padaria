@@ -3,6 +3,16 @@
 {% block content %}
 <h2>Controle de Caixa - {{ data_hoje }}</h2>
 
+{% if not caixa_inicio %}
+    <a href="{{ url_for('registrar_troco') }}" class="btn btn-warning mb-3">
+        <i class="fas fa-money-bill-wave"></i> Registrar Troco Inicial
+    </a>
+{% else %}
+    <div class="alert alert-secondary">
+        <strong>Troco Inicial:</strong> R$ {{ "%.2f"|format(caixa_inicio.troco_inicial) }}
+    </div>
+{% endif %}
+
 <div class="row mb-4">
     <div class="col-md-4">
         <div class="card shadow-sm">

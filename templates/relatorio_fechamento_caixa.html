@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Fechamento de Caixa - {{ data_hoje }}</title>
+    <title>Fechamento de Caixa - {{ data_hoje | formatar_data}}</title>
     <style>
         body { font-family: Arial, sans-serif; }
         h2 { text-align: center; }
@@ -18,23 +18,24 @@
     </style>
 </head>
 <body>
-    <h2>Fechamento de Caixa - {{ data_hoje }}</h2>
+    <h2>Fechamento de Caixa - {{ data_hoje | formatar_data}}</h2>
 
+    <!-- Informações do caixa -->
     <div class="info-box">
-        <p><strong>Total de Vendas:</strong> R$ {{ "%.2f"|format(total_caixa) }}</p>
-        <p><strong>Pagamentos em Dinheiro:</strong> R$ {{ "%.2f"|format(total_dinheiro) }}</p>
-        <p><strong>Pagamentos em Cartão:</strong> R$ {{ "%.2f"|format(total_cartao) }}</p>
-        <p><strong>Pagamentos Fiado:</strong> R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</p>
-        <p><strong>Saldo Final (Dinheiro):</strong> R$ {{ "%.2f"|format(saldo_final_dinheiro) }}</p>
+        <p><strong>Troco Inicial:</strong> R$ {{ "%.2f"|format(troco_inicial) }}</p>
+        <p><strong>Vendas em Dinheiro:</strong> R$ {{ "%.2f"|format(total_dinheiro) }}</p>
+        <p><strong>Recebimento de Fiado (Dinheiro):</strong> R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</p>
+        <p><strong>Sangrias:</strong> R$ {{ "%.2f"|format(total_sangrias) }}</p>
+        <p><strong>Saldo Final em Dinheiro:</strong> R$ {{ "%.2f"|format(saldo_final_dinheiro) }}</p>
     </div>
 
+    <!-- Detalhe das vendas -->
     <h4>Detalhe das Vendas</h4>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Data/Hora</th>
-                <th>Usuário</th>
                 <th>Forma</th>
                 <th>Valor</th>
             </tr>
@@ -44,41 +45,77 @@
                 <tr>
                     <td>{{ venda[0] }}</td>
                     <td>{{ venda[1] | formatar_data }}</td>
-                    <td>{{ venda[3] }}</td>
                     <td>{{ venda[2]|title }}</td>
                     <td>R$ {{ "%.2f"|format(venda[4]) }}</td>
                 </tr>
             {% endfor %}
             <tr class="total">
-                <td colspan="4">Total Geral</td>
+                <td colspan="3">Total Geral</td>
                 <td>R$ {{ "%.2f"|format(total_vendas) }}</td>
             </tr>
         </tbody>
     </table>
-    <!-- Seção de Recebimento de Fiado -->
-        <h4>Recebimentos de Fiado</h4>
+
+    <!-- Pagamentos de fiado -->
+    {% if pagamentos_fiados %}
+        <h4>Recebimento de Fiado (Dinheiro)</h4>
         <table>
             <thead>
                 <tr>
-                    <th>Data</th>
                     <th>Cliente</th>
+                    <th>Data</th>
                     <th>Valor</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pagamento in pagamentos_fiados %}
                     <tr>
-                        <td>{{ pagamento.data_pagamento | formatar_data }}</td>
                         <td>{{ pagamento.nome }}</td>
+                        <td>{{ pagamento.data_pagamento | formatar_data }}</td>
                         <td>R$ {{ "%.2f"|format(pagamento.valor_pago) }}</td>
                     </tr>
                 {% endfor %}
                 <tr class="total">
-                    <td colspan="2"><strong>Total de Fiado Recebido</strong></td>
+                    <td colspan="2"><strong>Total Recebido</strong></td>
                     <td><strong>R$ {{ "%.2f"|format(total_pagamentos_fiados) }}</strong></td>
                 </tr>
             </tbody>
         </table>
-    
+    {% endif %}
+
+    <!-- Sangrias -->
+    {% if sangrias %}
+        <h4>Sangrias do Dia</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Valor</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sangria in sangrias %}
+                    <tr>
+                        <td>{{ sangria.data_hora | formatar_data }}</td>
+                        <td>R$ {{ "%.2f"|format(sangria.valor) }}</td>
+                        <td>{{ sangria.descricao or '-' }}</td>
+                    </tr>
+                {% endfor %}
+                <tr class="total">
+                    <td colspan="1"><strong>Total de Sangrias</strong></td>
+                    <td>R$ {{ "%.2f"|format(total_sangrias) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+    <!-- Saldo Final -->
+    <table class="table table-bordered mt-5">
+        <tr class="total">
+            <td><strong>Saldo Final em Dinheiro</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(saldo_final_dinheiro) }}</strong></td>
+        </tr>
+    </table>
 </body>
 </html>
