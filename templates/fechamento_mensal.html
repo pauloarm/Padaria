@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Fechamento Mensal - {{ mes }}/{{ ano }}{% endblock %}
+{% block content %}
+<h2>Fechamento de Caixa - {{ mes }}/{{ ano }}</h2>
+
+<!-- Filtro de mês -->
+<form class="mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-3">
+            <select name="mes" class="form-select">
+                {% set meses = {
+                    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+                    5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+                    9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+                } %}
+                
+                {% for numero, nome in meses.items() %}
+                    <option value="{{ numero }}" {% if numero == mes %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="ano" value="{{ ano }}" class="form-control" min="2020" max="2030">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+</form>
+
+<!-- Resumo Geral -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Vendas em Dinheiro</h5>
+                <p class="display-6 text-success">R$ {{ "%.2f"|format(total_dinheiro) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Vendas em Cartão</h5>
+                <p class="display-6 text-primary">R$ {{ "%.2f"|format(total_cartao) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Pagamentos Fiados</h5>
+                <p class="display-6 text-warning">R$ {{ "%.2f"|format(total_fiado) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Sangrias</h5>
+                <p class="display-6 text-danger">R$ {{ "%.2f"|format(total_sangrias) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detalhe por dia -->
+<h4>Detalhe por Dia</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Dinheiro</th>
+            <th>Cartão</th>
+            <th>Fiado</th>
+            <th>Sangria</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dia in dias %}
+            <tr>
+                <td>{{ dia[0] | formatar_data }}</td>
+                <td>R$ {{ "%.2f"|format(dia[1]) }}</td>
+                <td>R$ {{ "%.2f"|format(dia[2]) }}</td>
+                <td>R$ {{ "%.2f"|format(dia[3]) }}</td>
+                <td>R$ {{ "%.2f"|format(dia[4] or 0) }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-secondary">
+            <td><strong>Total</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(total_dinheiro) }}</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(total_cartao) }}</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(total_fiado) }}</strong></td>
+            <td><strong>R$ {{ "%.2f"|format(total_sangrias) }}</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Saldo Final  -->
+<div class="alert alert-success mt-4">
+    <h5>Saldo Final:</h5>
+    <p><strong>R$ {{ "%.2f"|format(saldo_final) }}</strong></p>
+</div>
+
+<!-- Saldo Final em Dinheiro -->
+<div class="alert alert-success mt-4">
+    <h5>Saldo Final em Dinheiro:</h5>
+    <p><strong>R$ {{ "%.2f"|format(saldo_final_dinheiro) }}</strong></p>
+</div>
+
+<!-- Botão para gerar PDF -->
+<a href="{{ url_for('gerar_relatorio', tipo='fechamento_mensal') }}?mes={{ mes }}&ano={{ ano }}" class="btn btn-danger mb-5">
+    <i class="fas fa-file-pdf"></i> Gerar Relatório Mensal (PDF)
+</a>
+
+{% endblock %}

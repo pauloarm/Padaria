@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fechamento Mensal - {{ mes }}/{{ ano }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { text-align: center; }
+        h4 { margin-top: 30px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        .total {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .saldo-final {
+            margin-top: 30px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Relatório de Fechamento de Caixa</h2>
+    <h4>{{ meses[mes] }} / {{ ano }}</h4>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Dinheiro</th>
+                <th>Cartão</th>
+                <th>Fiado</th>
+                <th>Sangria</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dia in dias %}
+                <tr>
+                    <td>{{ dia[0] }}</td>
+                    <td>R$ {{ "%.2f"|format(dia[1]) }}</td>
+                    <td>R$ {{ "%.2f"|format(dia[2]) }}</td>
+                    <td>R$ {{ "%.2f"|format(dia[3]) }}</td>
+                    <td>R$ {{ "%.2f"|format(dia[4] or 0) }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="total">
+                <td><strong>Total</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total_dinheiro) }}</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total_cartao) }}</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total_fiado) }}</strong></td>
+                <td><strong>R$ {{ "%.2f"|format(total_sangrias) }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="saldo-final">
+        <p><strong>Saldo Final em Dinheiro:</strong> R$ {{ "%.2f"|format(saldo_final) }}</p>
+    </div>
+
+</body>
+</html>

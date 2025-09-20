@@ -1,10 +1,8 @@
-import sqlite3
+import sqlite3, pdfkit, io, calendar
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from database import get_db, init_db, close_connection
-import pdfkit
-import io
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_123456'
@@ -239,71 +237,6 @@ def historico_vendas():
     ''', (usuario_id,)).fetchall()
 
     return render_template('historico_vendas.html', vendas=vendas_usuario)
-
-@app.route('/historico_caixa')
-@login_required
-def historico_caixa():
-    db = get_db()
-    
-    # Buscar todos os dias com vendas ou sangrias
-    vendas_por_dia = db.execute('''
-        SELECT DATE(data_hora), SUM(valor_total) AS total_venda, 
-               SUM(CASE WHEN forma_pagamento = 'dinheiro' THEN valor_total ELSE 0 END) AS total_dinheiro,
-               SUM(CASE WHEN forma_pagamento = 'cartao' THEN valor_total ELSE 0 END) AS total_cartao
-        FROM vendas
-        GROUP BY DATE(data_hora)
-    ''').fetchall()
-
-    sangrias_por_dia = db.execute('''
-        SELECT DATE(data_hora), SUM(valor) AS total_sangria
-        FROM sangrias
-        GROUP BY DATE(data_hora)
-    ''').fetchall()
-
-    # Agrupar por data
-    dados_por_data = {}
-
-    for venda in vendas_por_dia:
-        data = venda[0]
-        if data not in dados_por_data:
-            dados_por_data[data] = {
-                'data': data,
-                'total_venda': venda[1],
-                'total_dinheiro': venda[2],
-                'total_cartao': venda[3],
-                'total_sangria': 0
-            }
-
-    for sangria in sangrias_por_dia:
-        data = sangria[0]
-        if data in dados_por_data:
-            dados_por_data[data]['total_sangria'] = sangria[1]
-        else:
-            dados_por_data[data] = {
-                'data': data,
-                'total_venda': 0,
-                'total_dinheiro': 0,
-                'total_cartao': 0,
-                'total_sangria': sangria[1]
-            }
-
-    # Calcular saldo final
-    historico = []
-    for data, dados in dados_por_data.items():
-        saldo_final = round(dados['total_dinheiro'] - dados['total_sangria'], 2)
-        historico.append({
-            'data': dados['data'],
-            'total_venda': dados['total_venda'],
-            'total_dinheiro': dados['total_dinheiro'],
-            'total_cartao': dados['total_cartao'],
-            'total_sangria': dados['total_sangria'],
-            'saldo_final': saldo_final
-        })
-
-    # Ordenar por data (mais recente primeiro)
-    historico.sort(key=lambda x: x['data'], reverse=True)
-
-    return render_template('historico_caixa.html', historico=historico)
 
 @app.route('/editar_item/<int:item_id>', methods=['GET', 'POST'])
 @login_required
@@ -770,6 +703,76 @@ def gerar_recibo_dividas_quitadas(cliente_id):
         mimetype='application/pdf'
     )
 
+@app.route('/fechamento_mensal')
+@login_required
+def fechamento_mensal():
+    db = get_db()
+    
+    # Data atual
+    hoje = datetime.now().date()
+    ano_atual = hoje.year
+    mes_atual = hoje.month
+    
+    # Mês e ano solicitados (padrão é o mês corrente)
+    mes = int(request.args.get('mes', mes_atual))
+    ano = int(request.args.get('ano', ano_atual))
+
+    # Primeiro e último dia do mês
+    primeiro_dia = f"{ano}-{mes:02d}-01"
+    ultimo_dia = f"{ano}-{mes:02d}-{calendar.monthrange(ano, mes)[1]}"  # Último dia do mês
+
+    # Se for mês atual, só mostra até ontem
+    limite_dia = ultimo_dia
+    
+    # Busca todos os dias do mês com totais diários
+    dias_do_mes = db.execute(f'''
+    SELECT 
+        DATE(v.data_hora) AS data,
+        SUM(CASE WHEN v.forma_pagamento = 'dinheiro' THEN v.valor_total ELSE 0 END) AS dinheiro_vendas,
+        SUM(CASE WHEN v.forma_pagamento = 'cartao' THEN v.valor_total ELSE 0 END) AS cartao_vendas,
+        
+        IFNULL((
+            SELECT SUM(hp.valor_pago)
+            FROM historico_pagamentos hp
+            WHERE DATE(hp.data_pagamento) = DATE(v.data_hora)
+        ), 0) AS fiado_recebido,
+
+        IFNULL((
+            SELECT SUM(s.valor)
+            FROM sangrias s
+            WHERE DATE(s.data_hora) = DATE(v.data_hora)
+        ), 0) AS sangria_dia
+
+    FROM vendas v
+    WHERE DATE(v.data_hora) BETWEEN ? AND ?
+    GROUP BY DATE(v.data_hora)
+    ORDER BY DATE(v.data_hora) DESC
+''', (primeiro_dia, limite_dia)).fetchall()
+
+    # Prepara dados consolidados
+    total_dinheiro = sum(d[1] or 0 for d in dias_do_mes)
+    total_cartao = sum(d[2] or 0 for d in dias_do_mes)
+    total_fiado = sum(d[3] or 0 for d in dias_do_mes)
+    total_sangrias = sum(d[4] or 0 for d in dias_do_mes)
+
+    saldo_final_dinheiro = round(total_dinheiro + total_fiado - total_sangrias, 2)
+    saldo_final = round(total_cartao + total_dinheiro + total_fiado - total_sangrias,2)
+
+    return render_template(
+        'fechamento_mensal.html',
+        dias=dias_do_mes,
+        total_dinheiro=total_dinheiro,
+        total_cartao=total_cartao,
+        total_fiado=total_fiado,
+        saldo_final = saldo_final,
+        total_sangrias=total_sangrias,
+        saldo_final_dinheiro=saldo_final_dinheiro,
+        mes=mes,
+        ano=ano,
+        mes_atual=hoje.month,
+        ano_atual=hoje.year
+    )
+
 @app.route('/finalizar_venda', methods=['POST'])
 @login_required
 def finalizar_venda():
@@ -845,7 +848,13 @@ def relatorios():
 @login_required
 def gerar_relatorio(tipo):
     db = get_db()
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = datetime.now().date()
+    
+    mes_atual = request.args.get('mes', default=hoje.month, type=int)
+    ano_atual = request.args.get('ano', default=hoje.year, type=int)
+
+    primeiro_dia = f"{ano_atual}-{mes_atual:02d}-01"
+    ultimo_dia = f"{ano_atual}-{mes_atual:02d}-{calendar.monthrange(ano_atual, mes_atual)[1]}"
     if tipo == 'vendas':
         vendas = db.execute('''
             SELECT v.id, u.nome, v.data_hora, v.valor_total, v.forma_pagamento 
@@ -880,8 +889,7 @@ def gerar_relatorio(tipo):
             GROUP BY i.id ORDER BY total_vendido DESC LIMIT 10
         ''').fetchall()
         html = render_template('relatorio_mais_vendidos.html', itens=mais_vendidos)
-
-    
+      
     elif tipo == 'fechamento_caixa':
 
         caixa_inicio = db.execute('''
@@ -939,6 +947,55 @@ def gerar_relatorio(tipo):
             saldo_final_dinheiro=saldo_final_dinheiro,
             data_hoje=hoje
         )
+    elif tipo == 'fechamento_mensal':
+        dias_do_mes = db.execute(f'''
+            SELECT 
+                DATE(v.data_hora) AS data,
+                SUM(CASE WHEN v.forma_pagamento = 'dinheiro' THEN v.valor_total ELSE 0 END) AS dinheiro_vendas,
+                SUM(CASE WHEN v.forma_pagamento = 'cartao' THEN v.valor_total ELSE 0 END) AS cartao_vendas,
+                
+                IFNULL((
+                    SELECT SUM(hp.valor_pago)
+                    FROM historico_pagamentos hp
+                    WHERE DATE(hp.data_pagamento) = DATE(v.data_hora)
+                ), 0) AS fiado_recebido,
+
+                IFNULL((
+                    SELECT SUM(s.valor)
+                    FROM sangrias s
+                    WHERE DATE(s.data_hora) = DATE(v.data_hora)
+                ), 0) AS sangria_dia
+
+            FROM vendas v
+            WHERE DATE(v.data_hora) BETWEEN ? AND ?
+            GROUP BY DATE(v.data_hora)
+            ORDER BY DATE(v.data_hora) DESC
+        ''', (primeiro_dia, ultimo_dia)).fetchall()
+
+        total_dinheiro = sum(d[1] for d in dias_do_mes if d[1] is not None)
+        total_cartao = sum(d[2] for d in dias_do_mes if d[2] is not None)
+        total_fiado = sum(d[3] for d in dias_do_mes if d[3] is not None)
+        total_sangrias = sum(d[4] for d in dias_do_mes if d[4] is not None)
+
+        saldo_final = round(total_dinheiro + total_fiado - total_sangrias, 2)
+
+        html = render_template(
+            'relatorio_fechamento_mensal.html',
+            dias=dias_do_mes,
+            mes=mes_atual,
+            ano=ano_atual,
+            total_dinheiro=total_dinheiro,
+            total_cartao=total_cartao,
+            total_fiado=total_fiado,
+            total_sangrias=total_sangrias,
+            saldo_final=saldo_final,
+            meses={
+                1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+                5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+                9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+            }
+        )
+    
 
     options = {
     'enable-local-file-access': None,
