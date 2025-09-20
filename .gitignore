@@ -5,3 +5,6 @@ instance/vendas.db
 .DS_Store
 .env
 *.log
+build
+dist
+app.spec

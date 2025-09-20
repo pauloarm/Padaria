@@ -1,4 +1,4 @@
-import sqlite3, pdfkit, io, calendar
+import sqlite3, pdfkit, io, calendar, os
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from database import get_db, init_db, close_connection
@@ -1053,6 +1053,5 @@ def listar_vendas():
     return render_template('listar_vendas.html', vendas=vendas_com_itens)
     
 if __name__ == '__main__':
-    init_db(app)
-    app.run(debug=True)
-
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
